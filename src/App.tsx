@@ -3,17 +3,17 @@ import heroImg from './assets/hero.png'
 import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
 import './App.css'
+import { PlayingCard, type CardName } from './components/PlayingCard'
+import type { Suit } from './components/PlayingCard'
 
 
-export type Suit = '♠' | '♥' | '♦' | '♣';
-export type CardName = '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | 'J' | 'Q' | 'K' | 'A';
 interface Card {
-  name: string,
-  suit: string,
+  name: CardName,
+  suit: Suit,
   weight: number,
 }
 
-function getWeight(value: cardName): number {
+function getWeight(value: CardName): number {
   switch (value) {
     case '2':
     case '3':
@@ -34,7 +34,7 @@ function getWeight(value: cardName): number {
 }
 
 class Shoe {
-  private cards: Card[];
+  private cards: Card[] = [];
   private numDecks: number;
 
   constructor(numDecks: number = 6) {
@@ -45,7 +45,7 @@ class Shoe {
   resetAndShuffle() {
     const newCards: Card[] = [];
     const suits: Suit[] = ['♠', '♥', '♦', '♣']; 
-    const cardNames: cardName[] = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+    const cardNames: CardName[] = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
     for (let i=0; i < this.numDecks; i++) {
       for (let suit of suits) {
         for (let cardName of cardNames)
@@ -76,22 +76,81 @@ class Shoe {
   }
 }
 
-function App() {
-  const [count, setCount] = useState(0)
-  const shoe = useRef<Shoe>(new Shoe(6));  
-  let [card, setCard] = useState<Card>(shoe.current.draw());
+interface Trainer {
+  currentCard: Card| null;
+  isRunning: Boolean;
+  secondsPerCard: number;
+  numCards: number;
+  numDecks: number;
+  count: number;
+  stop: () => void;
+  start: () => void;
+  reset: () => void;
+  changeSecondsPerCard: (secondsPerCard: number) => void;
+  changeNumCards: (numCards: number) => void;
+  changeNumDecks: (numDecks: number) => void;
+}
+
+function useTrainer() : Trainer{
+  const [numDecks, setNumDecks] = useState<number>(6);
+  const shoeRef = useRef<Shoe>(new Shoe(numDecks));
+  const [currentCard, setCurrentCard] = useState<Card | null>(null);
+  const [isRunning, setIsRunning] = useState<Boolean>(false);
+  const [secondsPerCard, setSecondsPerCard] = useState<number>(1);
+  const [numCards, setNumCards] = useState<number>(1);
+  const [count, setCount] = useState<number>(0);
+
+  const start = () => {
+    console.log("starting trainer")
+    setIsRunning(true);
+  }
+  const stop = () => {
+    console.log("stopping trainer")
+    setIsRunning(false);
+  }
+  const reset = () => {
+    shoeRef.current.resetAndShuffle();
+    setCurrentCard(null);
+    setCount(0);
+  }
+
+  const changeSecondsPerCard = (seconds: number) => {
+    setSecondsPerCard(seconds);
+  }
+
+  const changeNumCards = (num: number) => {
+    setNumCards(num);
+  }
+
+  const changeNumDecks = (num: number) => {
+    setNumDecks(num);
+  }
 
   useEffect(() => {
-    
+    if (!isRunning) {
+      return
+    }
     const intervalId = setInterval(() => {
-      const nextCard = shoe.current.draw();
+      const nextCard = shoeRef.current.draw();
       if (nextCard) {
-        setCard(nextCard)
+        setCurrentCard(nextCard)
+        setCount(getWeight(nextCard.name));
+      } else {
+        setIsRunning(false)
       }
-    }, 1000)
-    return clearInterval(intervalId)
-  }, [])
-  
+    }, secondsPerCard * 1000);
+    return () => clearInterval(intervalId);
+    }, [isRunning, secondsPerCard]);
+
+  return {currentCard, isRunning, secondsPerCard, numCards, numDecks, count, stop, start, reset, changeSecondsPerCard, changeNumCards, changeNumDecks}
+
+
+}
+
+
+function App() {
+  const [count, setCount] = useState(0)
+  const trainer = useTrainer();
 
   return (
     <>
@@ -101,113 +160,43 @@ function App() {
           <img src={reactLogo} className="framework" alt="React logo" />
           <img src={viteLogo} className="vite" alt="Vite logo" />
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
         <button
           type="button"
           className="counter"
           onClick={() => setCount((count) => count + 1)}
         >
           Count is {count}
-          Cards are {card.name} of {card.suit}
+
+          Cards are {trainer.currentCard?.name} of {trainer.currentCard?.suit}
         </button>
-        <button 
-          type="button"
-          className="counter"
-          onClick={() => setCard(() => shoe.current.draw())}
-          >
-            Card is {card.name} of {card.suit}
+        <div className="controls">
+          <button onClick={trainer.start}>
+            Go  
           </button>
-      </section>
+          <button onClick={trainer.stop}>
+            Stop
+          </button>
+          <button onClick={trainer.reset}>
+            Reset
+          </button>
+          <input type="number" min="1" step="1" value={trainer.secondsPerCard} onChange={(e) => trainer.changeSecondsPerCard(Number(e.target.value))} />
+          <input type="number" min="1" step="1" value={trainer.numCards} onChange={(e) => trainer.changeNumCards(Number(e.target.value))} />
+          <input type="number" min="1" max="8" step="1" value={trainer.numDecks} onChange={(e) => trainer.changeNumDecks(Number(e.target.value))} />
+        </div>um
 
-      <div className="ticks"></div>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+        <div className="cards">
+
+          current card is {trainer.currentCard?.name} of {trainer.currentCard?.suit}
+          
+          {trainer.currentCard ? (
+            <PlayingCard name={trainer.currentCard.name} suit={trainer.currentCard.suit} />
+          ) : (
+            <PlayingCard name={'A'} suit={'♠'} />
+          )}
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
 
-      <div className="ticks"></div>
+      </section>
       <section id="spacer"></section>
     </>
   )
