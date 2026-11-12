@@ -67,7 +67,7 @@ class Shoe {
     }
   }
 
-  draw(): Card {
+  draw(): Card | undefined{
     return this.cards.pop()
   }
 
@@ -101,11 +101,9 @@ function useTrainer() : Trainer{
   const [count, setCount] = useState<number>(0);
 
   const start = () => {
-    console.log("starting trainer")
     setIsRunning(true);
   }
   const stop = () => {
-    console.log("stopping trainer")
     setIsRunning(false);
   }
   const reset = () => {
@@ -155,20 +153,16 @@ function App() {
   return (
     <>
       <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
 
-          Cards are {trainer.currentCard?.name} of {trainer.currentCard?.suit}
-        </button>
+        <div className="cardViewer">
+          {trainer.currentCard ? (
+            <PlayingCard name={trainer.currentCard.name} suit={trainer.currentCard.suit} />
+          ) : (
+            
+            <PlayingCard name={'A'} suit={'♠'} />
+          )}
+        </div>
+
         <div className="controls">
           <button onClick={trainer.start}>
             Go  
@@ -179,22 +173,16 @@ function App() {
           <button onClick={trainer.reset}>
             Reset
           </button>
-          <input type="number" min="1" step="1" value={trainer.secondsPerCard} onChange={(e) => trainer.changeSecondsPerCard(Number(e.target.value))} />
-          <input type="number" min="1" step="1" value={trainer.numCards} onChange={(e) => trainer.changeNumCards(Number(e.target.value))} />
-          <input type="number" min="1" max="8" step="1" value={trainer.numDecks} onChange={(e) => trainer.changeNumDecks(Number(e.target.value))} />
-        </div>um
-
-
-        <div className="cards">
-
-          current card is {trainer.currentCard?.name} of {trainer.currentCard?.suit}
-          
-          {trainer.currentCard ? (
-            <PlayingCard name={trainer.currentCard.name} suit={trainer.currentCard.suit} />
-          ) : (
-            <PlayingCard name={'A'} suit={'♠'} />
-          )}
         </div>
+        <div className="inputGroup">
+          <label>Seconds per card:</label>
+          <input type="number" min="1" step="1" value={trainer.secondsPerCard} onChange={(e) => trainer.changeSecondsPerCard(Number(e.target.value))} />
+          <label>Number of cards:</label>
+          <input type="number" min="1" step="1" value={trainer.numCards} onChange={(e) => trainer.changeNumCards(Number(e.target.value))} />
+          <label>Number of decks:</label>
+          <input type="number" min="1" max="8" step="1" value={trainer.numDecks} onChange={(e) => trainer.changeNumDecks(Number(e.target.value))} />
+        </div>
+
 
       </section>
       <section id="spacer"></section>

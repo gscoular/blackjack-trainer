@@ -17,11 +17,22 @@
   }
 }
 
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  max-width: 220px;
+  margin: 16px auto;
+}
+
 .cardViewer {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 16px;
+  padding: 32px;
 }
 
 .card {
