@@ -26,6 +26,15 @@
   margin: 16px auto;
 }
 
+.controls {
+  display: flex;
+  gap: 8px;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  margin: 16px auto;
+}
+
 .cardViewer {
   position: relative;
   display: flex;

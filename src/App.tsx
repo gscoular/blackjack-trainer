@@ -1,7 +1,4 @@
 import { useState, useEffect, useRef } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
 import './App.css'
 import { PlayingCard, type CardName } from './components/PlayingCard'
 import type { Suit } from './components/PlayingCard'
@@ -83,12 +80,14 @@ interface Trainer {
   numCards: number;
   numDecks: number;
   count: number;
+  hideCount: Boolean;
   stop: () => void;
   start: () => void;
   reset: () => void;
   changeSecondsPerCard: (secondsPerCard: number) => void;
   changeNumCards: (numCards: number) => void;
   changeNumDecks: (numDecks: number) => void;
+  toggleHideCount: () => void;
 }
 
 function useTrainer() : Trainer{
@@ -99,14 +98,19 @@ function useTrainer() : Trainer{
   const [secondsPerCard, setSecondsPerCard] = useState<number>(1);
   const [numCards, setNumCards] = useState<number>(1);
   const [count, setCount] = useState<number>(0);
+  const [hideCount, setHideCount] = useState<Boolean>(false);
 
   const start = () => {
+    console.log("starting")
     setIsRunning(true);
   }
   const stop = () => {
+    console.log("stopping")
     setIsRunning(false);
+    
   }
   const reset = () => {
+    console.log("resetting")
     shoeRef.current.resetAndShuffle();
     setCurrentCard(null);
     setCount(0);
@@ -122,6 +126,10 @@ function useTrainer() : Trainer{
 
   const changeNumDecks = (num: number) => {
     setNumDecks(num);
+  }
+
+  const toggleHideCount = () => {
+    setHideCount(!hideCount);
   }
 
   useEffect(() => {
@@ -140,16 +148,14 @@ function useTrainer() : Trainer{
     return () => clearInterval(intervalId);
     }, [isRunning, secondsPerCard]);
 
-  return {currentCard, isRunning, secondsPerCard, numCards, numDecks, count, stop, start, reset, changeSecondsPerCard, changeNumCards, changeNumDecks}
+  return {currentCard, isRunning, secondsPerCard, numCards, numDecks, count, hideCount, stop, start, reset, changeSecondsPerCard, changeNumCards, changeNumDecks, toggleHideCount}
 
 
 }
 
 
 function App() {
-  const [count, setCount] = useState(0)
   const trainer = useTrainer();
-
   return (
     <>
       <section id="center">
@@ -161,16 +167,20 @@ function App() {
             
             <PlayingCard name={'A'} suit={'♠'} />
           )}
+          <div className="countDisplay">
+            <button onClick={trainer.toggleHideCount}>{trainer.hideCount ? 'Show Count' : 'Hide Count'}</button>
+            <div className="countLabel" hidden={trainer.hideCount}>Count: {trainer.count}</div>
+          </div>
         </div>
 
         <div className="controls">
-          <button onClick={trainer.start}>
+          <button onClick={trainer.start} disabled={trainer.isRunning? true: false}>
             Go  
           </button>
-          <button onClick={trainer.stop}>
+          <button onClick={trainer.stop} disabled={trainer.isRunning? false: true}>
             Stop
           </button>
-          <button onClick={trainer.reset}>
+          <button onClick={trainer.reset} disabled={trainer.isRunning? true: false}>
             Reset
           </button>
         </div>

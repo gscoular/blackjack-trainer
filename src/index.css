@@ -55,15 +55,10 @@
   max-width: 100%;
   margin: 0 auto;
   text-align: center;
-  border-inline: 1px solid var(--border);
   min-height: 100svh;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-}
-
-body {
-  margin: 0;
 }
 
 h1,
@@ -108,4 +103,21 @@ code {
   line-height: 135%;
   padding: 4px 8px;
   background: var(--code-bg);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: #0b4628;
+  background-image: 
+    radial-gradient(circle at 50% 35%, rgba(25, 118, 68, 0.85) 0%, rgba(11, 70, 40, 0.95) 65%, #062917 100%),
+    repeating-linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.02) 0px,
+      rgba(255, 255, 255, 0.02) 2px,
+      transparent 2px,
+      transparent 4px
+    );
+  color: #f8fafc;
+  font-family: system-ui, -apple-system, sans-serif;
 }
