@@ -97,16 +97,13 @@ function useTrainer() : Trainer{
   const [hideCount, setHideCount] = useState<Boolean>(false);
 
   const start = () => {
-    console.log("starting")
     setIsRunning(true);
   }
   const stop = () => {
-    console.log("stopping")
     setIsRunning(false);
     
   }
   const reset = () => {
-    console.log("resetting")
     shoeRef.current.resetAndShuffle();
     setCurrentCards([]);
     setCount(0);
@@ -146,7 +143,7 @@ function useTrainer() : Trainer{
       }
     }, secondsPerCard * 1000);
     return () => clearInterval(intervalId);
-    }, [isRunning, secondsPerCard]);
+    }, [isRunning, secondsPerCard, numCards]);
 
   return {currentCards: currentCards, isRunning, secondsPerCard, numCards, numDecks, count, hideCount, stop, start, reset, changeSecondsPerCard, changeNumCards, changeNumDecks, toggleHideCount}
 
