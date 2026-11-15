@@ -1,14 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
 import './App.css'
-import { PlayingCard, type CardName } from './components/PlayingCard'
+import { type Card, PlayingCard, type CardName } from './components/PlayingCard'
 import type { Suit } from './components/PlayingCard'
+import { CardHand } from './components/CardHand';
 
 
-interface Card {
-  name: CardName,
-  suit: Suit,
-  weight: number,
-}
+
 
 function getWeight(value: CardName): number {
   switch (value) {
@@ -49,7 +46,6 @@ class Shoe {
           newCards.push({
             name: cardName,
             suit: suit,
-            weight: getWeight(cardName)
           })
       }
       this.cards = newCards;
@@ -74,7 +70,7 @@ class Shoe {
 }
 
 interface Trainer {
-  currentCard: Card| null;
+  currentCards: Card[];
   isRunning: Boolean;
   secondsPerCard: number;
   numCards: number;
@@ -93,7 +89,7 @@ interface Trainer {
 function useTrainer() : Trainer{
   const [numDecks, setNumDecks] = useState<number>(6);
   const shoeRef = useRef<Shoe>(new Shoe(numDecks));
-  const [currentCard, setCurrentCard] = useState<Card | null>(null);
+  const [currentCards, setCurrentCards] = useState<Card[]>([]);
   const [isRunning, setIsRunning] = useState<Boolean>(false);
   const [secondsPerCard, setSecondsPerCard] = useState<number>(1);
   const [numCards, setNumCards] = useState<number>(1);
@@ -112,7 +108,7 @@ function useTrainer() : Trainer{
   const reset = () => {
     console.log("resetting")
     shoeRef.current.resetAndShuffle();
-    setCurrentCard(null);
+    setCurrentCards([]);
     setCount(0);
   }
 
@@ -137,18 +133,22 @@ function useTrainer() : Trainer{
       return
     }
     const intervalId = setInterval(() => {
-      const nextCard = shoeRef.current.draw();
-      if (nextCard) {
-        setCurrentCard(nextCard)
-        setCount(getWeight(nextCard.name));
-      } else {
-        setIsRunning(false)
+      const nextCards = [];
+      for (let i = 0; i < numCards; i++) {
+        const nextCard = shoeRef.current.draw();
+        if (nextCard) {
+          nextCards.push(nextCard);
+          setCount(getWeight(nextCard.name));
+        } else {
+          setIsRunning(false)
+        }
+        setCurrentCards(nextCards);
       }
     }, secondsPerCard * 1000);
     return () => clearInterval(intervalId);
     }, [isRunning, secondsPerCard]);
 
-  return {currentCard, isRunning, secondsPerCard, numCards, numDecks, count, hideCount, stop, start, reset, changeSecondsPerCard, changeNumCards, changeNumDecks, toggleHideCount}
+  return {currentCards: currentCards, isRunning, secondsPerCard, numCards, numDecks, count, hideCount, stop, start, reset, changeSecondsPerCard, changeNumCards, changeNumDecks, toggleHideCount}
 
 
 }
@@ -161,16 +161,12 @@ function App() {
       <section id="center">
 
         <div className="cardViewer">
-          {trainer.currentCard ? (
-            <PlayingCard name={trainer.currentCard.name} suit={trainer.currentCard.suit} />
-          ) : (
-            
-            <PlayingCard name={'A'} suit={'♠'} />
-          )}
-          <div className="countDisplay">
-            <button onClick={trainer.toggleHideCount}>{trainer.hideCount ? 'Show Count' : 'Hide Count'}</button>
-            <div className="countLabel" hidden={trainer.hideCount}>Count: {trainer.count}</div>
-          </div>
+          <CardHand cards={trainer.currentCards}></CardHand>
+        </div>
+
+        <div className="countDisplay">
+          <button onClick={trainer.toggleHideCount}>{trainer.hideCount ? 'Show Count' : 'Hide Count'}</button>
+          <div className="countLabel" hidden={trainer.hideCount? true: false}>Count: {trainer.count}</div>
         </div>
 
         <div className="controls">
@@ -188,7 +184,7 @@ function App() {
           <label>Seconds per card:</label>
           <input type="number" min="1" step="1" value={trainer.secondsPerCard} onChange={(e) => trainer.changeSecondsPerCard(Number(e.target.value))} />
           <label>Number of cards:</label>
-          <input type="number" min="1" step="1" value={trainer.numCards} onChange={(e) => trainer.changeNumCards(Number(e.target.value))} />
+          <input type="number" min="1" max="5" step="1" value={trainer.numCards} onChange={(e) => trainer.changeNumCards(Number(e.target.value))} />
           <label>Number of decks:</label>
           <input type="number" min="1" max="8" step="1" value={trainer.numDecks} onChange={(e) => trainer.changeNumDecks(Number(e.target.value))} />
         </div>

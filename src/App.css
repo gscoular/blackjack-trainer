@@ -38,8 +38,9 @@
 .cardViewer {
   position: relative;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
+  justify-content: center;
   gap: 16px;
   padding: 32px;
 }
