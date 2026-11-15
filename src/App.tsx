@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import './App.css'
-import { type Card, PlayingCard, type CardName } from './components/PlayingCard'
+import { type Card, type CardName } from './components/PlayingCard'
 import type { Suit } from './components/PlayingCard'
 import { CardHand } from './components/CardHand';
 
